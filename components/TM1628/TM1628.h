@@ -1,71 +1,78 @@
-#ifndef TM1628_h
-#define TM1628_h
+#pragma once
 
-#if defined(ARDUINO) && ARDUINO >= 100
-	#include "Arduino.h"
-#else
-	#include "WProgram.h"
-#endif
+#include "esphome/core/automation.h"
+#include "esphome/core/component.h"
+#include "esphome/core/defines.h"
+#include "esphome/core/hal.h"
+#include "esphome/core/time.h"
 
-#include "TM16XXFonts.h"
-#include "Print.h"
-//flags for turn on/off
-#define ON true
-#define OFF false
+#include <vector>
 
-//flags for indicating LEDs
-#define LED_SE0                 0x00
-#define LED_SE1                 0x01
-#define LED_SE2                 0x02
-#define LED_SE3                 0x03
-#define LED_SE4                 0x04
-#define LED_SE5                 0x05
-#define LED_SE6                 0x06
-#define LED_PERCENT             0x07 // Procento kryziukas
-#define LED_WIFI                0x08 // Virsutinis kairinis taskiukas
-#define LED_SECONDS1            0x09 // Virsutinis sekundziu taskiukas
-#define LED_SECONDS2            0x0A // Apatinis sekundziu taskiukas
-#define LED_CELCIUS             0x0B // Taskiukas virsuj, prie temperaturos, celsijus
-#define LED_PERCENT_DOTS        0x0C // Procentai
-#define LED_FARENHEIT           0x0D // Taskiukas virsuj, prie temperaturos, farenheitai
-#define LED_RET                 0x0E
-#define LED_DTS                 0x0F
-#define LED_DDD                 0x10
-#define LED_CL1                 0x11
-#define LED_CL2                 0x12
+namespace esphome {
+namespace tm1628 {
 
-
-class TM1628 : public Print
-{
-  public:
-	// init
-	TM1628(byte _dio_pin, byte _clk_pin, byte _stb_pin);
-	
-	void begin(boolean active, int intensity);
-	void update();
-	void clear();
-	void setSeg(byte addr, byte num);
-	void setChar(byte _curpos, byte chr);
-	void setCursor(byte pos);
-	virtual size_t write(byte chr);
-	void setTime(int hour, int min);
-	void setLED(byte led);
-	void setLEDon(byte led);
-	void setLEDoff(byte led);
-	void setLastSegment(byte num);
-	byte getButtons();
-  protected:
-    byte receive();
-    void sendData(byte addr, byte data);
-    void sendCommand(byte data);
-    void send(byte data);
-    
-    byte _dio_pin;
-    byte _clk_pin;
-    byte _stb_pin;
-	byte _curpos;
-//	byte buffer[];
-//	byte seg_addr[];
+class KeyListener {
+ public:
+  virtual void keys_update(uint8_t keys){};
 };
 
-#endif
+class tm1628Component;
+
+using tm1628_writer_t = std::function<void(tm1628Component &)>;
+
+class tm1628Component : public PollingComponent {
+ public:
+  void set_writer(tm1628_writer_t &&writer) { this->writer_ = writer; }
+  void setup() override;
+  void dump_config() override;
+  void update() override;
+  float get_setup_priority() const override;
+  void set_intensity(uint8_t brightness_level);
+  void display();
+
+  void set_clk_pin(GPIOPin *pin) { this->clk_pin_ = pin; }
+  void set_dio_pin(GPIOPin *pin) { this->dio_pin_ = pin; }
+  void set_stb_pin(GPIOPin *pin) { this->stb_pin_ = pin; }
+
+  void register_listener(KeyListener *listener) { this->listeners_.push_back(listener); }
+
+  /// Evaluate the printf-format and print the result at the given position.
+  uint8_t printf(uint8_t pos, const char *format, ...) __attribute__((format(printf, 3, 4)));
+  /// Evaluate the printf-format and print the result at position 0.
+  uint8_t printf(const char *format, ...) __attribute__((format(printf, 2, 3)));
+
+  /// Print `str` at the given position.
+  uint8_t print(uint8_t pos, const char *str);
+  /// Print `str` at position 0.
+  uint8_t print(const char *str);
+
+  void loop() override;
+  uint8_t get_keys();
+
+  /// Evaluate the strftime-format and print the result at the given position.
+  uint8_t strftime(uint8_t pos, const char *format, ESPTime time) __attribute__((format(strftime, 3, 0)));
+  /// Evaluate the strftime-format and print the result at position 0.
+  uint8_t strftime(const char *format, ESPTime time) __attribute__((format(strftime, 2, 0)));
+
+  void set_led(int led_pos, bool led_on_off);
+
+ protected:
+  void set_7seg_(int seg_pos, uint8_t seg_bits);
+  void send_command_(uint8_t value);
+  void send_command_leave_open_(uint8_t value);
+  void send_commands_(uint8_t const commands[], uint8_t num_commands);
+  void send_command_sequence_(uint8_t commands[], uint8_t num_commands, uint8_t starting_address);
+  void shift_out_(uint8_t value);
+  void reset_();
+  uint8_t shift_in_();
+  uint8_t intensity_{};  /// brghtness of the display  0 through 7
+  GPIOPin *clk_pin_;
+  GPIOPin *stb_pin_;
+  GPIOPin *dio_pin_;
+  uint8_t *buffer_ = new uint8_t[8];
+  optional<tm1628_writer_t> writer_{};
+  std::vector<KeyListener *> listeners_{};
+};
+
+}  // namespace tm1628
+}  // namespace esphome
