@@ -1,8 +1,8 @@
 #pragma once
 
 namespace esphome {
-namespace tm1628 {
-namespace tm1628Translation {
+namespace tm1638 {
+namespace TM1638Translation {
 
 const unsigned char SEVEN_SEG[] PROGMEM = {
     0x00, /* (space) */
@@ -102,6 +102,6 @@ const unsigned char SEVEN_SEG[] PROGMEM = {
     0x01, /* ~ */
 };
 
-};  // namespace tm1628Translation
-}  // namespace tm1628
+};  // namespace TM1638Translation
+}  // namespace tm1638
 }  // namespace esphome

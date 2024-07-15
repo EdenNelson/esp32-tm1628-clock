@@ -9,20 +9,20 @@
 #include <vector>
 
 namespace esphome {
-namespace tm1628 {
+namespace tm1638 {
 
 class KeyListener {
  public:
   virtual void keys_update(uint8_t keys){};
 };
 
-class tm1628Component;
+class TM1638Component;
 
-using tm1628_writer_t = std::function<void(tm1628Component &)>;
+using tm1638_writer_t = std::function<void(TM1638Component &)>;
 
-class tm1628Component : public PollingComponent {
+class TM1638Component : public PollingComponent {
  public:
-  void set_writer(tm1628_writer_t &&writer) { this->writer_ = writer; }
+  void set_writer(tm1638_writer_t &&writer) { this->writer_ = writer; }
   void setup() override;
   void dump_config() override;
   void update() override;
@@ -70,9 +70,9 @@ class tm1628Component : public PollingComponent {
   GPIOPin *stb_pin_;
   GPIOPin *dio_pin_;
   uint8_t *buffer_ = new uint8_t[8];
-  optional<tm1628_writer_t> writer_{};
+  optional<tm1638_writer_t> writer_{};
   std::vector<KeyListener *> listeners_{};
 };
 
-}  // namespace tm1628
+}  // namespace tm1638
 }  // namespace esphome
