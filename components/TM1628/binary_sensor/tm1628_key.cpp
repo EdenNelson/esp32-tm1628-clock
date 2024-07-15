@@ -1,13 +1,13 @@
-#include "tm1638_key.h"
+#include "tm1628_key.h"
 
 namespace esphome {
-namespace tm1638 {
+namespace tm1628 {
 
-void TM1638Key::keys_update(uint8_t keys) {
+void tm1628Key::keys_update(uint8_t keys) {
   bool pressed = keys & (1 << key_code_);
   if (pressed != this->state)
     this->publish_state(pressed);
 }
 
-}  // namespace tm1638
+}  // namespace tm1628
 }  // namespace esphome
