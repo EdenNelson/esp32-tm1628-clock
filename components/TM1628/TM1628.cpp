@@ -1,5 +1,5 @@
-#include "sevenseg.h"
 #include "tm1628.h"
+#include "sevenseg.h"
 #include "esphome/core/log.h"
 #include "esphome/core/helpers.h"
 #include "esphome/core/hal.h"
