@@ -13,16 +13,16 @@ from esphome.const import (
 
 CODEOWNERS = ["@skykingjwc"]
 
-CONF_TM1638_ID = "tm1638_id"
+CONF_tm1628_ID = "tm1628_id"
 
-tm1638_ns = cg.esphome_ns.namespace("tm1638")
-TM1638Component = tm1638_ns.class_("TM1638Component", cg.PollingComponent)
-TM1638ComponentRef = TM1638Component.operator("ref")
+tm1628_ns = cg.esphome_ns.namespace("tm1628")
+tm1628Component = tm1628_ns.class_("tm1628Component", cg.PollingComponent)
+tm1628ComponentRef = tm1628Component.operator("ref")
 
 
 CONFIG_SCHEMA = display.BASIC_DISPLAY_SCHEMA.extend(
     {
-        cv.GenerateID(): cv.declare_id(TM1638Component),
+        cv.GenerateID(): cv.declare_id(tm1628Component),
         cv.Required(CONF_CLK_PIN): pins.gpio_output_pin_schema,
         cv.Required(CONF_STB_PIN): pins.gpio_output_pin_schema,
         cv.Required(CONF_DIO_PIN): pins.gpio_output_pin_schema,
@@ -48,7 +48,7 @@ async def to_code(config):
 
     if CONF_LAMBDA in config:
         lambda_ = await cg.process_lambda(
-            config[CONF_LAMBDA], [(TM1638ComponentRef, "it")], return_type=cg.void
+            config[CONF_LAMBDA], [(tm1628ComponentRef, "it")], return_type=cg.void
         )
 
     cg.add(var.set_writer(lambda_))
